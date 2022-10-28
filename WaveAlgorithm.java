@@ -1,33 +1,36 @@
+// сделать волновой алгоритм, который будет находить выход из лабиринта
+// и найти самый короткий путь от старта до выхода
+
 public class WaveAlgorithm {
+  // определяем что будет на карте
   static int emptyCell = 0;
-//  static int winCell = -8;
   static int block = -1;
   static int start = -2;
   static int exit = -8;
+  // создаем карту
   static int[][] map = {
       { 0, 0, 0, -1, 0, 0, 0, 0 },
-      { 0, -1, 0, 0, 0, -1, -1, 0 },
-      { 0, 0, 0, 0, -1, 0, 0, 0 },
-      { 0, -1, 0, 0, -8, 0, -1, 0 },
-      { -2, 0, 0, -1, -1, 0, -1, 0 },
-      { 0, 0, -1, 0, 0, -1, 0, -8 },
-      { 0, 0, 0, -1, -1, -1, 0, 0 },
+      { 0, -1, 0, -8, 0, -1, -1, 0 },
+      { 0, 0, -1, 0, -1, 0, 0, 0 },
+      { 0, -1, 0, -1, 0, 0, -1, 0 },
+      { 0, 0, 0, -1, -1, 0, -1, 0 },
+      { 0, 0, 0, -1, 0, -1, 0, 0 },
+      { 0, 0, -2, -1, -1, -1, 0, 0 },
       { 0, -1, 0, 0, 0, 0, 0, 0 }
   };
   static int[][] queue = new int[map.length * map[0].length][3];
   static int posQueue = 0;
-  static int[] positionExit = { 5, 7, 0, 7 };
 
   public static void main(String[] args) {
-
-    print();
     int countExits = getCountOfExit();
+    if (countExits == 0) {
+      return;
+    }
     int[][] coordinatesExit = getCoordinatesOfExit(countExits);
+    print();
     move();
     findShortestWay(countExits, coordinatesExit);
     print();
-    // TODO 3
-    // Сделать функцию, которая будет проверять возможно ли сделать шаг
   }
 
   // i = 0 - Количество шагов до выхода
@@ -81,7 +84,6 @@ public class WaveAlgorithm {
     result[0] = steps;
     return result;
   }
-
   static int[] getStartPosition() {
     int[] startPosition = new int[2];
     for (int i = 0; i < map.length; i++) {
@@ -94,7 +96,6 @@ public class WaveAlgorithm {
     }
     return startPosition;
   }
-
   static void findShortestWay(int countsExit, int[][] coordinatesExit) {
     int[] exit = getShortWayAndCoordinateToFinish(countsExit, coordinatesExit);
     assert exit != null;
@@ -102,45 +103,57 @@ public class WaveAlgorithm {
     int y = exit[1];
     int x = exit[2];
     int[][] ways = new int[stepsToExit + 1][2];
+    int sides = 4;
     int idx = 0;
     System.out.println("***");
     ways[idx][0] = y;
     ways[idx][1] = x;
     idx++;
-    while (map[y][x] != start) {
+    while (map[y][x] != start && sides > 0) {
+      int upY = y - 1;
+      int rightX = x + 1;
+      int leftX = x - 1;
+      int downY = y + 1;
       // down
-      y = y + 1;
-      if (y < map.length && map[y][x] < map[y - 1][x] && map[y][x] != block) {
-        ways[idx][0] = y;
+      if (downY < map.length && map[downY][x] < map[y][x] && map[downY][x] != block) {
+        ways[idx][0] = downY;
         ways[idx][1] = x;
+        y = downY;
         idx++;
         continue;
       }
       // left
-      y = y - 1;
-      x = x - 1;
-      if (x >= 0 && map[y][x] < map[y][x + 1] && map[y][x] != block) {
+      if (leftX >= 0 && map[y][leftX] < map[y][x] && map[y][leftX] != block) {
         ways[idx][0] = y;
-        ways[idx][1] = x;
+        ways[idx][1] = leftX;
+        x = leftX;
         idx++;
         continue;
       }
       // right
-      x = x + 2;
-      if (x < map[0].length && map[y][x] < map[y][x - 1] && map[y][x] != block) {
+      if (rightX < map[0].length && map[y][rightX] < map[y][x] && map[y][rightX] != block) {
         ways[idx][0] = y;
-        ways[idx][1] = x;
+        ways[idx][1] = rightX;
+        x = rightX;
         idx++;
         continue;
       }
       // up
-      x = x - 1;
-      y = y - 1;
-      if (y >= 0 && map[y][x] < map[y + 1][x] && map[y][x] != block) {
-        ways[idx][0] = y;
+      if (upY >= 0 && map[upY][x] < map[y][x] && map[upY][x] != block) {
+        ways[idx][0] = upY;
         ways[idx][1] = x;
+        y = upY;
         idx++;
+        continue;
       }
+      // если не можем двигаться, то
+      // помечаем ячейку
+      // берем предыдущие координаты
+      map[y][x] = -1;
+      y = ways[idx][0];
+      x = ways[idx][0];
+      // увеличиваем попытки шагов на 1
+      sides++;
       }
       if (map[y][x] == start) {
         System.out.printf("Path find, steps - %d\n", stepsToExit);
@@ -150,6 +163,10 @@ public class WaveAlgorithm {
           }
           System.out.println();
         }
+      }
+      if (sides <= 0) {
+        System.out.println("Path not found");
+        return;
       }
       System.out.println("***");
   }
@@ -166,8 +183,6 @@ public class WaveAlgorithm {
           System.out.printf(" %c |", '\u263a');
         } else if (anInt == emptyCell) {
           System.out.printf(" %c |", ' ');
-//        } else if (anInt == winCell) {
-//          System.out.printf(" %c |", '\u2714');
         } else {
           System.out.printf(" %d |", anInt);
         }
@@ -175,15 +190,6 @@ public class WaveAlgorithm {
       System.out.println();
     }
     System.out.printf("-------------------------------\n");
-  }
-
-  static void printQueue() {
-    for (int i = 0; i < queue.length; i++) {
-      for (int j = 0; j < queue[i].length; j++) {
-        System.out.printf("%d ", queue[i][j]);
-      }
-      System.out.println();
-    }
   }
 
   // в каждой строке очереди
@@ -229,11 +235,6 @@ public class WaveAlgorithm {
     initQueue();
     int step = 1;
     while (queue[0][0] != 0) {
-      // try {
-      // Thread.sleep(500);
-      // print();
-      // } catch (Exception ignored) {}
-
       int[] c = removeQueue();
       int s = c[0];
       int y = c[1];
@@ -255,7 +256,6 @@ public class WaveAlgorithm {
         map[y][rightX] = s;
         addQueue(s + 1, y, rightX);
       } else if (rightX < map.length && map[y][rightX] == exit) {
-        // map[y][rightX] = winCell;
         map[y][rightX] = s;
         continue;
       }
@@ -263,11 +263,16 @@ public class WaveAlgorithm {
       if (leftX >= 0 && map[y][leftX] == emptyCell) {
         map[y][leftX] = s;
         addQueue(s + 1, y, leftX);
+      } else if (leftX >= 0 && map[y][leftX] == exit) {
+        map[y][leftX] = s;
+        continue;
       }
       // down
       if (downY < map.length && map[downY][x] == emptyCell) {
         map[downY][x] = s;
         addQueue(s + 1, downY, x);
+      } else if (downY < map.length && map[downY][x] == exit) {
+        map[downY][x] = s;
       }
     }
   }
