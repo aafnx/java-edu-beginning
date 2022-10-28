@@ -1,14 +1,14 @@
 public class WaveAlgorithm {
   static int emptyCell = 0;
-  static int winCell = -5;
+//  static int winCell = -8;
   static int block = -1;
   static int start = -2;
   static int exit = -8;
   static int[][] map = {
-      { 0, 0, 0, -1, 0, 0, 0, -8 },
+      { 0, 0, 0, -1, 0, 0, 0, 0 },
       { 0, -1, 0, 0, 0, -1, -1, 0 },
       { 0, 0, 0, 0, -1, 0, 0, 0 },
-      { 0, -1, 0, 0, 0, 0, -1, 0 },
+      { 0, -1, 0, 0, -8, 0, -1, 0 },
       { -2, 0, 0, -1, -1, 0, -1, 0 },
       { 0, 0, -1, 0, 0, -1, 0, -8 },
       { 0, 0, 0, -1, -1, -1, 0, 0 },
@@ -16,85 +16,134 @@ public class WaveAlgorithm {
   };
   static int[][] queue = new int[map.length * map[0].length][3];
   static int posQueue = 0;
-  static int[] positionStart = { 4, 0 };
   static int[] positionExit = { 5, 7, 0, 7 };
 
   public static void main(String[] args) {
-    initQueue();
+
     print();
+    int countExits = getCountOfExit();
+    int[][] coordinatesExit = getCoordinatesOfExit(countExits);
     move();
-    findShortestWay();
+    findShortestWay(countExits, coordinatesExit);
     print();
-    // TODO
-    // сделать функцию, которая найдет меньшее количество шагов до выхода и вернет
-    // количество шагов
-    // это функция будет вызываться в функции поиска пути
-    // TODO 2
-    // сделать функцию, которая будет возвращать стартовую позицию
     // TODO 3
     // Сделать функцию, которая будет проверять возможно ли сделать шаг
   }
 
-  static void findShortestWay() {
-    int stepsToExit = 12;
-    int[][] ways = new int[stepsToExit + 1][2];
-    int steps = 0;
-    int y = positionExit[0];
-    int x = positionExit[1];
-    if (map[y][x] == stepsToExit) {
-      System.out.println("***");
-      if (ways[0][0] == 0) {
-        ways[steps][0] = y;
-        ways[steps][1] = x;
-        steps++;
+  // i = 0 - Количество шагов до выхода
+  // i = 1 - Координата y
+  // i = 2 - Координата x
+  static int getCountOfExit() {
+    int result = 0;
+    for (int i = 0; i < map.length; i++) {
+      for (int j = 0; j < map[i].length; j++) {
+        if (map[i][j] == exit) {
+          result++;
+        }
       }
-      while (map[y][x] != start) {
-        // down
-        y = y + 1;
-        if (y < map.length && map[y][x] < map[y - 1][x] && map[y][x] != block) {
-          System.out.printf("down, %d - %d\n", map[y - 1][x], map[y][x]);
-          ways[steps][0] = y;
-          ways[steps][1] = x;
-          steps++;
-          continue;
+    }
+    return result;
+  }
+  static int[][] getCoordinatesOfExit(int countsExit) {
+    int[][] result = new int[countsExit][2];
+    int idx = 0;
+    for (int i = 0; i < map.length; i++) {
+      for (int j = 0; j < map[i].length; j++) {
+        if (idx == countsExit) {
+          return result;
         }
-        // left
-        y = y - 1;
-        x = x - 1;
-        if (x >= 0 && map[y][x] < map[y][x + 1] && map[y][x] != block) {
-          System.out.printf("left, %d - %d\n", map[y][x + 1], map[y][x]);
-          ways[steps][0] = y;
-          ways[steps][1] = x;
-          steps++;
-          continue;
+        if (map[i][j] == exit) {
+          result[idx][0] = i;
+          result[idx][1] = j;
+          idx++;
         }
-        // right
-        x = x + 2;
-        if (x < map[0].length && map[y][x] < map[y][x - 1] && map[y][x] != block) {
-          System.out.printf("right, %d - %d\n", map[y][x - 1], map[y][x]);
-          ways[steps][0] = y;
-          ways[steps][1] = x;
-          steps++;
-          continue;
-        }
-        // up
-        x = x - 1;
-        y = y - 1;
-        if (y >= 0 && map[y][x] < map[y + 1][x] && map[y][x] != block) {
-          System.out.printf("up, %d - %d\n", map[y + 1][x], map[y][x]);
-          ways[steps][0] = y;
-          ways[steps][1] = x;
-          steps++;
-          continue;
-        }
-        // else {
-        // System.out.printf("y - %d, x - %d\n", ways[0][0], ways[0][1]);
-        // return;
-        // }
       }
+    }
+    return null;
+  }
+  static int[] getShortWayAndCoordinateToFinish(int countExit, int[][] coordinatesExit) {
+    if (countExit <= 0) {
+      return null;
+    }
+    int[] result = new int[3];
+    int steps = map[coordinatesExit[0][0]][coordinatesExit[0][1]];
+    for (int i = 0; i < coordinatesExit.length; i++) {
+      for (int j = 1; j < coordinatesExit[i].length; j++) {
+        int y = coordinatesExit[i][j - 1];
+        int x = coordinatesExit[i][j];
+        if (map[y][x] <= steps) {
+          steps = map[y][x];
+          result[1] = y;
+          result[2] = x;
+        }
+      }
+    }
+    result[0] = steps;
+    return result;
+  }
 
+  static int[] getStartPosition() {
+    int[] startPosition = new int[2];
+    for (int i = 0; i < map.length; i++) {
+      for (int j = 0; j < map[i].length; j++) {
+        if (map[i][j] == start) {
+          startPosition[0] = i;
+          startPosition[1] = j;
+        }
+      }
+    }
+    return startPosition;
+  }
+
+  static void findShortestWay(int countsExit, int[][] coordinatesExit) {
+    int[] exit = getShortWayAndCoordinateToFinish(countsExit, coordinatesExit);
+    assert exit != null;
+    int stepsToExit = exit[0];
+    int y = exit[1];
+    int x = exit[2];
+    int[][] ways = new int[stepsToExit + 1][2];
+    int idx = 0;
+    System.out.println("***");
+    ways[idx][0] = y;
+    ways[idx][1] = x;
+    idx++;
+    while (map[y][x] != start) {
+      // down
+      y = y + 1;
+      if (y < map.length && map[y][x] < map[y - 1][x] && map[y][x] != block) {
+        ways[idx][0] = y;
+        ways[idx][1] = x;
+        idx++;
+        continue;
+      }
+      // left
+      y = y - 1;
+      x = x - 1;
+      if (x >= 0 && map[y][x] < map[y][x + 1] && map[y][x] != block) {
+        ways[idx][0] = y;
+        ways[idx][1] = x;
+        idx++;
+        continue;
+      }
+      // right
+      x = x + 2;
+      if (x < map[0].length && map[y][x] < map[y][x - 1] && map[y][x] != block) {
+        ways[idx][0] = y;
+        ways[idx][1] = x;
+        idx++;
+        continue;
+      }
+      // up
+      x = x - 1;
+      y = y - 1;
+      if (y >= 0 && map[y][x] < map[y + 1][x] && map[y][x] != block) {
+        ways[idx][0] = y;
+        ways[idx][1] = x;
+        idx++;
+      }
+      }
       if (map[y][x] == start) {
-        System.out.printf("Path find, steps - %d\n", steps - 1);
+        System.out.printf("Path find, steps - %d\n", stepsToExit);
         for (int i = ways.length - 1; i >= 0; i--) {
           for (int j = 1; j < ways[i].length; j++) {
             System.out.printf("%d - %d", ways[i][j - 1], ways[i][j]);
@@ -103,27 +152,24 @@ public class WaveAlgorithm {
         }
       }
       System.out.println("***");
-    }
   }
 
   static void print() {
-    System.out.printf("-------------------------------\n");
-    for (int i = 0; i < map.length; i++) {
-      for (int j = 0; j < map[i].length; j++) {
-        // System.out.printf("%d ", map[i][j]);
-        if (map[i][j] == block) {
+    System.out.print("-------------------------------\n");
+    for (int[] ints : map) {
+      for (int anInt : ints) {
+        if (anInt == block) {
           System.out.printf(" %c |", '▓');
-        } else if (map[i][j] == exit) {
+        } else if (anInt == exit) {
           System.out.printf(" %c |", '\u2605');
-        } else if (map[i][j] == start) {
+        } else if (anInt == start) {
           System.out.printf(" %c |", '\u263a');
-        } else if (map[i][j] == emptyCell) {
+        } else if (anInt == emptyCell) {
           System.out.printf(" %c |", ' ');
-        } else if (i == positionExit[0] && j == positionExit[1]
-            || i == positionExit[2] && j == positionExit[3]) {
-          System.out.printf(" %c |", '\u2714');
+//        } else if (anInt == winCell) {
+//          System.out.printf(" %c |", '\u2714');
         } else {
-          System.out.printf(" %d |", map[i][j]);
+          System.out.printf(" %d |", anInt);
         }
       }
       System.out.println();
@@ -145,6 +191,7 @@ public class WaveAlgorithm {
   // queue[0][1] - координата y
   // queue[0][2] - координата x
   static void initQueue() {
+    int[] positionStart = getStartPosition();
     queue[0][0] = 1;
     queue[0][1] = positionStart[0];
     queue[0][2] = positionStart[1];
@@ -179,6 +226,7 @@ public class WaveAlgorithm {
   }
 
   static void move() {
+    initQueue();
     int step = 1;
     while (queue[0][0] != 0) {
       // try {
@@ -199,7 +247,7 @@ public class WaveAlgorithm {
         map[upY][x] = s;
         addQueue(s + 1, upY, x);
       } else if (upY >= 0 && map[upY][x] == exit) {
-        map[upY][x] = winCell;
+        map[upY][x] = s;
         continue;
       }
       // right
