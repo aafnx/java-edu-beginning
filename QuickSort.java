@@ -3,10 +3,7 @@ import java.util.ArrayList;
 public class QuickSort {
   public static void main(String[] args) {
 
-    ArrayList<Integer> list = new ArrayList<>();
-    for (int i = 0; i < 7; i++) {
-      list.add(getRandomNumber());
-    }
+    ArrayList<Integer> list = initList();
 //    [3, 19, 15, 6, 15, 13, 0]
 //    list.add(3);
 //    list.add(19);
@@ -23,7 +20,7 @@ public class QuickSort {
     if (list.size() <= 1) {
       return list;
     }
-    int n = list.get(list.size() / 2);
+    int n = list.get(0);
     ArrayList<Integer> lower = new ArrayList<>();
     ArrayList<Integer> equal = new ArrayList<>();
     ArrayList<Integer> greater = new ArrayList<>();
@@ -38,7 +35,12 @@ public class QuickSort {
     list.addAll(sort(greater));
     return list;
   }
-  static int getRandomNumber() {
-    return (int) (Math.random() * 30 - 5);
+  static ArrayList<Integer> initList() {
+    ArrayList<Integer> list = new ArrayList<>();
+    for (int i = 0; i < 7; i++) {
+      int rnd = (int) (Math.random() * 30 - 5);
+      list.add(rnd);
+    }
+    return list;
   }
 }
