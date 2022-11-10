@@ -1,9 +1,9 @@
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class QuickSort {
   public static void main(String[] args) {
 
-    LinkedList<Integer> list = new LinkedList<>();
+    ArrayList<Integer> list = new ArrayList<>();
     for (int i = 0; i < 7; i++) {
       list.add(getRandomNumber());
     }
@@ -19,14 +19,14 @@ public class QuickSort {
     sort(list);
     System.out.println(list);
   }
-  static LinkedList<Integer> sort(LinkedList<Integer> list) {
+  static ArrayList<Integer> sort(ArrayList<Integer> list) {
     if (list.size() <= 1) {
       return list;
     }
     int n = list.get(list.size() / 2);
-    LinkedList<Integer> lower = new LinkedList<>();
-    LinkedList<Integer> equal = new LinkedList<>();
-    LinkedList<Integer> greater = new LinkedList<>();
+    ArrayList<Integer> lower = new ArrayList<>();
+    ArrayList<Integer> equal = new ArrayList<>();
+    ArrayList<Integer> greater = new ArrayList<>();
     for (int item : list) {
       if (item < n) lower.add(item);
       if (item == n) equal.add(item);
