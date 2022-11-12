@@ -2,16 +2,7 @@ import java.util.ArrayList;
 
 public class QuickSort {
   public static void main(String[] args) {
-
     ArrayList<Integer> list = initList();
-//    [3, 19, 15, 6, 15, 13, 0]
-//    list.add(3);
-//    list.add(19);
-//    list.add(15);
-//    list.add(6);
-//    list.add(15);
-//    list.add(13);
-//    list.add(0);
     System.out.println(list);
     sort(list);
     System.out.println(list);
